@@ -1,6 +1,7 @@
+import numpy as np
 import os
 import pandas as pd
-import numpy as np
+import time
 
 # ---------------- robust CSV loader ----------------
 def load_csv_smart(path: str) -> pd.DataFrame:
@@ -13,6 +14,8 @@ def load_csv_smart(path: str) -> pd.DataFrame:
     # fallback: keep going even if some bytes are bad
     return pd.read_csv(path, encoding="utf-8", encoding_errors="replace",
                        engine="python")
+
+start_time = time.perf_counter()
 
 CSV = os.environ.get("NHL_DRAFT_CSV",
                      "/home/tomassuarez/data/Datasets/nhl-ufc/nhldraft.csv")
@@ -114,3 +117,5 @@ counts = df["y_weak"].value_counts(dropna=False).to_dict()
 print(f"Loaded: {CSV}")
 print(f"Wrote:  {out_csv}")
 print(f"rows: {len(df)} | y_weak coverage: {coverage:.4f} | counts: {counts}")
+elapsed = time.perf_counter() - start_time
+print(f"Elapsed: {elapsed:.2f}s")
