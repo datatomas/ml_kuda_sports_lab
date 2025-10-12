@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/ml_kuda_sports_lab/__init__.py
-src/ml_kuda_sports_lab/gpu_test.py
-src/ml_kuda_sports_lab.egg-info/PKG-INFO
-src/ml_kuda_sports_lab.egg-info/SOURCES.txt
-src/ml_kuda_sports_lab.egg-info/dependency_links.txt
-src/ml_kuda_sports_lab.egg-info/requires.txt
-src/ml_kuda_sports_lab.egg-info/top_level.txt
