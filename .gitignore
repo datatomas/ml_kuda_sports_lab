@@ -1,2 +1,6 @@
 .env
 env
+*.egg-info/*.egg-info/
+ml_kuda_sports_lab.egg-info
+__pycache__
+.pyc
