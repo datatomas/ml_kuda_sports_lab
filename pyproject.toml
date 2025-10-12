@@ -7,7 +7,7 @@ name = "ml_kuda_sports_lab"
 version = "0.0.1"
 description = "ML lab: Fedora + RTX + PyTorch (CUDA/CPU) experiments"
 readme = "README.md"
-requires-python = "==3.12.11"
+requires-python = ">=3.12,<3.13"
 authors = [{ name = "Tomas Suarez", email = "tomsuarezx@gmail.com" }]
 dependencies = [
   "pandas",
