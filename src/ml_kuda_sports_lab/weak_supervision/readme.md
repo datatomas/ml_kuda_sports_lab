@@ -142,94 +142,17 @@ Example:
 
 ---
 
-## 6) Minimal Code Snippets (optional)
 
-> These snippets are for orientation; you can drop them into your repo later.
 
-**Create tags:**
+#Rules of thumb
 
-```python
-import pandas as pd
+Start with a guard (missing/dirty data → ABSTAIN).
 
-def pick_tier(p):
-    if pd.isna(p): return "NA"
-    p = int(p)
-    if p <= 10: return "top10"
-    if p <= 32: return "r1"
-    if p <= 64: return "r2"
-    if p <= 150: return "mid"
-    if p <= 199: return "late"
-    return "r7plus"
+Capture one idea per LF (e.g., “top-10 picks usually succeed”).
 
-def pos_group(pos):
-    pos = (str(pos) or "").upper()
-    if pos in {"C","LW","RW"}: return "F"
-    if pos == "D": return "D"
-    if pos == "G": return "G"
-    return "NA"
+Prefer simple, monotonic conditions (ranges, thresholds).
 
-df = pd.read_csv("/mnt/data/nhldraft.csv")
-df["pick_tier"] = df["overall_pick"].apply(pick_tier)
-df["pos_group"] = df["position"].apply(pos_group)
-```
-
-**Org quartiles (train split only):**
-
-```python
-# train_df is years ≤ some cutoff; success = games_played ≥ 200
-train_df = df[df["year"] <= 2015].copy()
-train_df["success"] = (train_df["games_played"].fillna(0) >= 200).astype(int)
-hit = train_df.groupby("team")["success"].mean().rename("team_hit_rate")
-q = hit.quantile([0.25, 0.5, 0.75]).to_dict()
-
-def org_quartile(team):
-    r = hit.get(team)
-    if pd.isna(r): return "NA"
-    if r >= q[0.75]: return "Q1_best"
-    if r >= q[0.50]: return "Q2"
-    if r >= q[0.25]: return "Q3"
-    return "Q4_worst"
-
-df["org_quartile"] = df["team"].apply(org_quartile)
-```
-
-**Deterministic weak label (no label model yet):**
-
-```python
-import numpy as np
-
-def weak_label(row):
-    p = row["overall_pick"]
-    pos = row["pos_group"]
-    if pd.isna(p): return np.nan  # abstain
-
-    p = int(p)
-
-    # strongest positives
-    if p <= 10: return 1
-    if 11 <= p <= 32: return 1
-
-    # position-aware
-    if pos == "D":
-        if p <= 45: return 1
-        if 65 <= p <= 120: return 0
-        if p >= 180: return 0
-    elif pos == "F":
-        if p <= 60: return 1
-        if p >= 180: return 0
-    elif pos == "G":
-        if p <= 60: return 1  # lean
-        if p >= 180: return 0
-
-    # pick-only residuals
-    if 33 <= p <= 64: return 1
-    if 65 <= p <= 150: return 0
-    if p >= 200: return 0
-
-    return np.nan  # abstain
-
-df["y_weak"] = df.apply(weak_label, axis=1)
-```
+If your rule feels like two rules, it probably is.
 
 > Later, replace this with a proper label model to turn multiple LF votes into a calibrated `p_success`.
 
