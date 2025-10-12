@@ -19,8 +19,8 @@ This is a single TXT file that contains EVERYTHING you need:
     source ~/.venvs/cuda312/bin/activate
 
     # Run modules directly by path
-    python src/ml_kuda_sports_lab/gpu_test.py
-    python src/ml_kuda_sports_lab/torch_test.py
+    python src/ml_kuda_sports_lab/tests/gpu_test.py
+    python src/ml_kuda_sports_lab/tests/torch_test.py
 
 If you prefer `-m` style imports, install once in editable mode:
 

@@ -4,3 +4,54 @@ env
 ml_kuda_sports_lab.egg-info
 __pycache__
 .pyc
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+
+# Distribution / packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Project specific
+ml_kuda_sports_lab.egg-info/
+
+# Data files (optional - uncomment if needed)
+*.csv
+*.pkl
+*.h5
+data/
+models/
+src/ml_kuda_sports_lab/__pycache__/__init__.cpython-312.pyc
+src/ml_kuda_sports_lab/__pycache__/__main__.cpython-312.pyc
