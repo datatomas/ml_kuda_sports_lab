@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ml_kuda_sports_lab"
+version = "0.0.1"
+description = "ML lab: Fedora + RTX + PyTorch (CUDA/CPU) experiments"
+readme = "README.md"
+requires-python = "==3.12.11"
+authors = [{ name = "Tomas Suarez", email = "tomsuarezx@gmail.com" }]
+dependencies = [
+  "pandas",
+  "scikit-learn",
+  # add your runtime deps here; DO NOT list torch here if you want to control CUDA wheel separately
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

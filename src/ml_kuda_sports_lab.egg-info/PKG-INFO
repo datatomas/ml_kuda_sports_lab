@@ -1,3 +1,13 @@
+Metadata-Version: 2.4
+Name: ml_kuda_sports_lab
+Version: 0.0.1
+Summary: ML lab: Fedora + RTX + PyTorch (CUDA/CPU) experiments
+Author-email: Tomas Suarez <tomsuarezx@gmail.com>
+Requires-Python: ==3.12.11
+Description-Content-Type: text/markdown
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+
 
 Each stage is reproducible on its own but also feeds the next stage in the pipeline.
 

@@ -5,7 +5,7 @@ set -euo pipefail
 VENV_PATH="${VENV_PATH:-$HOME/.venvs/cuda312}"
 # Base packages you want locally. You can override with:
 #   PKGS="pandas numpy ..." ./bootstrap_min.sh
-PKGS="${PKGS:-pandas numpy scikit-learn pillow tqdm azure-functions}"
+PKGS="${PKGS:-pandas numpy scikit-learn pillow tqdm azure-functions torch}"
 # Torch versions that have wheels for Python 3.12 at time of writing
 TORCH_VER="${TORCH_VER:-2.5.1}"
 TV_VER="${TV_VER:-0.20.1}"
