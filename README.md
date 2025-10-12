@@ -13,7 +13,7 @@ Each stage is reproducible on its own but also feeds the next stage in the pipel
 - Export **probabilistic labels** `y_prob` for downstream training.
 - Evaluate coverage, conflict, and accuracy on a small clean dev set.
 
-### 22 Class Imbalance Mitigation
+### 2. Class Imbalance Mitigation
 - **Goal:** handle uneven label distributions.
 - Implement and compare:
   - Weighted Cross-Entropy (inverse frequency)
@@ -23,13 +23,14 @@ Each stage is reproducible on its own but also feeds the next stage in the pipel
   - Optional: `WeightedRandomSampler` oversampling
 - Report macro-F1, AUCPR, calibration, and per-class metrics.
 
-### 2 Data Augmentation & Visual Modeling
+### 3. Data Augmentation & Visual Modeling
 - **Goal:** expand data diversity and move to GPU-intensive image/video models.
 - Label-preserving spatial/temporal transforms:
   - Flip, rotate, crop, color jitter, blur, motion jitter
 - Train heavy visual backbones (ResNet, ViT, SlowFast, X3D, TimeSformer) on CUDA.
 - Combine the best imbalance technique with augmentation and measure gains.
 
+---
 ---
 
 ## ⚙️ Environment Setup
