@@ -1,181 +1,247 @@
-# ML CUDA Sports Lab
-Weak Supervision → Class Imbalance → Data Augmentation (& video) — CUDA-ready.
+ML CUDA Sports Lab — Single-File Setup & Usage (TXT)
+====================================================
 
-Each stage is reproducible on its own but also feeds the next stage in the pipeline.
-
----
-
-
-
-## 🚀 Pipeline Stages
-
-### 1) Weak Supervision at Scale
-- **Goal:** generate large, weakly labeled datasets from text or event data.
-- Build labeling functions (LFs) for UFC or Hockey commentary.
-- Combine overlapping signals with a label model (majority or weighted vote).
-- Export **probabilistic labels** `y_prob` for downstream training.
-- Evaluate coverage, conflict, and accuracy on a small clean dev set.
-
-### 2) Class Imbalance Mitigation
-- **Goal:** handle uneven label distributions.
-- Implement and compare:
-  - Weighted Cross-Entropy (inverse frequency)
-  - Focal Loss (γ tuning)
-  - Class-Balanced Loss (effective number)
-  - Cost-matrix & threshold moving
-  - Optional: `WeightedRandomSampler` oversampling
-- Report macro-F1, AUCPR, calibration, and per-class metrics.
-
-### 3) Data Augmentation & Visual Modeling
-- **Goal:** expand data diversity and move to GPU-intensive image/video models.
-- Label-preserving spatial/temporal transforms: flip, rotate, crop, color jitter, blur, motion jitter.
-- Train heavy visual backbones (ResNet, ViT, SlowFast, X3D, TimeSformer) on CUDA.
-- Combine the best imbalance technique with augmentation and measure gains.
-
----
-
-## ⚙️ Environment Setup — Local Bootstrap & Use the NVIDIA GPU
-
-This repo is designed to work on a machine with an AMD iGPU (Ryzen/Raphael) **and** an NVIDIA dGPU (RTX 50-series). You do **not** need to disable the iGPU; PyTorch will use the NVIDIA card.
-
-### 0.1 NVIDIA driver (Fedora, one-time)
-```bash
-sudo dnf install \
-  https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-  https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda nvidia-settings nvidia-persistenced
-sudo reboot
-Verify after reboot:
-nvidia-smi
-#0.2 Clone the repo
-git clone https://github.com/datatomas/ml_kuda_sports_lab.git
-cd ml_kuda_sports_lab
-#0.3 Create a Python 3.12 venv (recommended for PyTorch wheels)
-# install 3.12 if missing
-sudo dnf install -y python3.12 python3.12-venv
-
-# make & activate venv
-/usr/bin/python3.12 -m venv ~/.venvs/cuda312
-source ~/.venvs/cuda312/bin/activate
-python -m pip install --upgrade pip
-
-#0.4 Install dependencies (one requirements file  for libraries one bootstrap for cpu installation)
-
-### 0.4 Install dependencies (choose ONE)
-
-# A) NVIDIA GPU wheels (recommended)
-pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu124
-# (fallback) pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu121
-
-# B) Build PyTorch from source (advanced; requires CUDA toolkit or builds CPU-only)
-# one-liner:
-git clone --recursive https://github.com/pytorch/pytorch && cd pytorch && \
-pip install -r requirements.txt && \
-USE_CUDA=1 CUDA_HOME=/usr/local/cuda MAX_JOBS=$(nproc) python setup.py develop
-
-# from repo root, venv active
-pip install -e .
-
-# run the per-module GPU check
-python -m ml_kuda_sports_lab.gpu_test
-
-# (optional) run the package entrypoint if __main__.py exists
-# python -m ml_kuda_sports_lab
-
-# programmatic check
-python - <<'PY'
-import ml_kuda_sports_lab as m
-res = m.gpu_test(verbose=True)
-print(res)
-PY
+This is a single TXT file that contains EVERYTHING you need:
+- how to run modules **by file path**,
+- CUDA/CPU install recipes with **correct PyTorch version combos**,
+- optional source builds (torch/vision/audio),
+- verification commands,
+- repo structure + tests guidance,
+- troubleshooting, and a suggested .gitignore snippet.
 
 
-#Activate your venv
-# 1) Activate the venv
-source ~/.venvs/cuda312/bin/activate
 
-# 2) Sanity check: these MUST point to the venv
-which python
-python -V
-python -c "import sys; print(sys.executable)"
+1) Run the code (by file path first)
+------------------------------------
+(Recommended for quick checks; no package install required.)
 
-# 3) Verify packages in THIS interpreter
-python -c "import torch, numpy; print('torch', torch.__version__); print('numpy', numpy.__version__)"
+    # Activate your venv (created below)
+    source ~/.venvs/cuda312/bin/activate
 
-# 4) (A) Quick run by path (stays within venv)
-python /home/tomassuarez/data/Documents/Gitrepos/ml_kuda_sports_lab/src/ml_kuda_sports_lab/gpu_test.py
+    # Run modules directly by path
+    python src/ml_kuda_sports_lab/gpu_test.py
+    python src/ml_kuda_sports_lab/torch_test.py
 
-# 4) (B) Or install your package in editable mode so `-m` works from anywhere
-cd /home/tomassuarez/data/Documents/Gitrepos/ml_kuda_sports_lab
-python -m pip install -e .
+If you prefer `-m` style imports, install once in editable mode:
 
-# Now this will work (still inside the venv)
-python -m ml_kuda_sports_lab.gpu_test
+    python -m pip install -e .
+    python -m ml_kuda_sports_lab.gpu_test
 
 
-#fix invalid torch versions
-# 2) Remove the old build to avoid conflicts
-pip uninstall -y torch torchvision torchaudio triton
-python -m pip uninstall -y torch torchvision torchaudio triton 'nvidia-*'
-python -m pip cache purge
 
-#2) Build PyTorch from your clone
-# If your clone is old, sync it to a release that supports sm_120 (2.8+)
-git fetch --all --tags
-git checkout v2.8.0        # or 'main' if you prefer latest
-git submodule sync
-git submodule update --init --recursive
+2) Environment (Fedora + NVIDIA)
+--------------------------------
+2.0  Install NVIDIA driver (one-time; reboot afterwards)
 
-pip install -U pip setuptools wheel
-pip install -U cmake ninja typing_extensions filelock sympy mpmath jinja2 networkx
-#
-export CUDA_HOME="$(dirname "$(dirname "$(which nvcc)")")"
-export USE_CUDA=1
-export USE_NINJA=1
-export MAX_JOBS="$(nproc)"
-# Compile exactly for your GPU arch; you can add others if you like.
-export TORCH_CUDA_ARCH_LIST="12.0"
+    sudo dnf install \
+      https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+      https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+    sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda nvidia-settings nvidia-persistenced
+    sudo reboot
 
-# Fedora often ships very new GCC. If NVCC complains, allow it:
-export NVCC_FLAGS="-allow-unsupported-compiler"
-# (Only use the above if you hit a GCC version mismatch error.)
-# From pytorch repo root
-pip install -e .
+After reboot, verify:
 
-# From pytorch repo root
-pip install -e .
+    nvidia-smi
+
+2.1  Clone & create Python 3.12 virtualenv
+
+    git clone https://github.com/datatomas/ml_kuda_sports_lab.git
+    cd ml_kuda_sports_lab
+
+    # Install Python 3.12 if missing, then create venv
+    sudo dnf install -y python3.12 python3.12-venv
+    /usr/bin/python3.12 -m venv ~/.venvs/cuda312
+    source ~/.venvs/cuda312/bin/activate
+    python -m pip install --upgrade pip
 
 
-3) (Optional) Build vision/audio from source to match
 
-I#f you use them:
+3) Install dependencies (choose ONE)
+------------------------------------
+3.A  **Recommended — GPU wheels (RTX 50-series → CUDA 12.8)**
 
-# torchvision (match the PyTorch tag; for 2.8.0 it's 0.19.x)
-git clone https://github.com/pytorch/vision.git
-cd vision
-git checkout v0.19.0
-pip install -e .
-cd ..
+    # Core libs
+    python -m pip install pandas numpy scikit-learn pillow tqdm azure-functions
 
-# torchaudio (match tag)
-git clone https://github.com/pytorch/audio.git
-cd audio
-git checkout v2.5.0
-pip install -e .
-cd ..
+    # PyTorch CUDA 12.8 wheels (Python 3.12)
+    python -m pip install --index-url https://download.pytorch.org/whl/cu128 \
+      torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0
 
-#Verify
-python - <<'PY'
-import sys, torch
+3.B  **Alternative — CUDA 12.4 wheels**
+
+    python -m pip install --index-url https://download.pytorch.org/whl/cu124 \
+      torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0
+
+3.C  **CPU-only** (no GPU)
+
+    python -m pip install pandas numpy scikit-learn pillow tqdm azure-functions
+    python -m pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0
+
+
+
+4) Verify the GPU & versions
+----------------------------
+    python - <<'PY'
+import torch, torchvision, torchaudio, sys
 print("python:", sys.executable)
-print("torch:", torch.__version__, "cuda:", torch.version.cuda)
-print("CUDA available:", torch.cuda.is_available())
+print("torch:", torch.__version__, "cuda:", torch.version.cuda, "cuda_available:", torch.cuda.is_available())
+print("torchvision:", torchvision.__version__, "| torchaudio:", torchaudio.__version__)
 if torch.cuda.is_available():
     print("device:", torch.cuda.get_device_name(0))
-    print("capability:", torch.cuda.get_device_capability(0))
-    print("arch list:", torch.cuda.get_arch_list())
+    print("arch list:", torch.cuda.get_arch_list()[:8])
 PY
 
 
-#run by path
-/home/tomassuarez/data/Documents/Gitrepos/ml_kuda_sports_lab/src/ml_kuda_sports_lab/torch_test.py
+
+5) Optional: Build from source (advanced)
+-----------------------------------------
+Use this ONLY if you need custom patches or bleeding-edge features.
+Build **torch** first, then **torchvision** and **torchaudio** at tags that
+match your installed torch major.minor.
+
+System deps for media (Fedora):
+
+    sudo dnf groupinstall -y "Development Tools"
+    sudo dnf install -y ffmpeg ffmpeg-devel sox sox-devel libsndfile libsndfile-devel \
+                        libjpeg-turbo-devel libpng-devel libtiff-devel openjpeg2-devel \
+                        libavcodec-devel libavformat-devel libavutil-devel \
+                        libswresample-devel libswscale-devel
+
+5.1  torch (example: v2.8.0)
+
+    git clone --recursive https://github.com/pytorch/pytorch
+    cd pytorch && git checkout v2.8.0 && git submodule update --init --recursive
+
+    python -m pip install -U cmake ninja typing_extensions filelock sympy mpmath jinja2 networkx
+
+    # GPU build
+    export USE_CUDA=1
+    export CUDA_HOME="$(dirname "$(dirname "$(command -v nvcc)")")"
+    export MAX_JOBS="$(nproc)"
+    export TORCH_CUDA_ARCH_LIST="12.0"          # RTX 50-series (Lovelace-next)
+    export NVCC_FLAGS="-allow-unsupported-compiler"  # helps with newer Fedora GCC
+
+    python -m pip install -e .
+    cd ..
+
+5.2  torchvision + torchaudio (match your torch)
+
+For torch **2.8.x** use **vision v0.23.0** and **audio v2.8.0**.
+(Your earlier 0.19.0/2.5.0 pair was the mismatch causing conflicts.)
+
+    # torchvision (video)
+    git clone https://github.com/pytorch/vision.git
+    cd vision && git checkout v0.23.0
+    export FORCE_CUDA=1 WITH_FFMPEG=1
+    python -m pip install -e .
+    cd ..
+
+    # torchaudio
+    git clone https://github.com/pytorch/audio.git
+    cd audio && git checkout v2.8.0
+    export USE_FFMPEG=1
+    python -m pip install -e .
+    cd ..
+
+Sanity check after source builds:
+
+    python - <<'PY'
+import torch, torchvision, torchaudio
+print("torch:", torch.__version__, "cuda:", torch.version.cuda)
+print("vision:", torchvision.__version__)
+print("audio:", torchaudio.__version__)
+PY
+
+[Note] For latest stable releases and least friction, prefer the **prebuilt wheels** in section 3.
+
+
+6) Repo structure & tests
+-------------------------
+Current structure (good):
+    src/ml_kuda_sports_lab/      # package code
+    bootstrap.sh
+    pyproject.toml
+    README.md (or this TXT)
+    requirements.txt
+    .vscode/settings.json
+
+Recommendation:
+- Keep package code under `src/ml_kuda_sports_lab/` (as is).
+- Create a top-level `tests/` folder to separate tests from library code.
+
+Example:
+    tests/
+      test_gpu.py
+      test_loss_funcs.py
+
+Minimal test example (tests/test_gpu.py):
+
+    import torch
+
+    def test_cuda_flag_exists():
+        assert isinstance(torch.cuda.is_available(), bool)
+
+Run tests:
+
+    python -m pip install pytest
+    pytest -q
+
+
+
+7) Troubleshooting
+------------------
+- ModuleNotFoundError: No module named 'torch'
+  -> You’re not in the venv, or torch didn’t install. Activate venv and install
+     a valid trio:
+       CUDA 12.8/CPU: torch==2.8.0  torchvision==0.23.0  torchaudio==2.8.0
+       CUDA 12.4:     torch==2.6.0  torchvision==0.21.0  torchaudio==2.6.0
+
+- GPU shows False but you installed CUDA wheels
+  -> Check driver: `nvidia-smi`. Ensure you used the **cu128** index for torch 2.8.x.
+
+- NVCC vs GCC complaints on Fedora (source builds)
+  -> export NVCC_FLAGS="-allow-unsupported-compiler"
+
+
+8) Suggested .gitignore (copy/paste)
+------------------------------------
+    # Python
+    __pycache__/
+    *.py[cod]
+    *.so
+    *.egg-info/
+    .build/
+    dist/
+
+    # Virtual envs
+    .venv/
+    venv/
+    .venvs/
+    venvs/
+
+    # VS Code
+    .vscode/*
+    !.vscode/settings.json
+    !.vscode/launch.json
+    !.vscode/extensions.json
+
+
+9) Quick commands reference
+---------------------------
+Activate venv:
+    source ~/.venvs/cuda312/bin/activate
+
+Run by path:
+    python src/ml_kuda_sports_lab/gpu_test.py
+    python src/ml_kuda_sports_lab/torch_test.py
+
+Install package (editable):
+    python -m pip install -e .
+
+GPU verify:
+    python - <<'PY'
+import torch; print(torch.__version__, torch.cuda.is_available())
+if torch.cuda.is_available(): print(torch.cuda.get_device_name(0))
+PY
+
+All set. For most users, **section 3.A** + **section 4** is enough.
