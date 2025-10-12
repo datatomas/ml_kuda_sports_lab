@@ -21,6 +21,7 @@ This is a single TXT file that contains EVERYTHING you need:
     # Run modules directly by path
     python src/ml_kuda_sports_lab/tests/gpu_test.py
     python src/ml_kuda_sports_lab/tests/torch_test.py
+    python src/ml_kuda_sports_lab/weak_labeling/nhl_drafts_wl.py
 
 If you prefer `-m` style imports, install once in editable mode:
 
