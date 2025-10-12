@@ -5,6 +5,7 @@ Each stage is reproducible on its own but also feeds the next stage in the pipel
 
 ##  Pipeline Stages
 
+
 ###    1 Weak Supervision at Scale
 - **Goal:** generate large, weakly labeled datasets from text or event data.
 - Build labeling functions (LFs) for UFC or Hockey commentary.
@@ -32,8 +33,12 @@ Each stage is reproducible on its own but also feeds the next stage in the pipel
 ---
 
 ## ⚙️ Environment Setup
+ Local Bootstrap & Use the NVIDIA GPU
 
-```bash
+This repo is designed to work out-of-the-box on a local dev box with an AMD iGPU (Ryzen/Raphael) **and** an NVIDIA dGPU (RTX 50-series). You do **not** need to disable the iGPU. For compute, PyTorch will use the NVIDIA card when you install the CUDA wheels.
+
+
+
 # clone
 git clone https://github.com/datatomas/ml_kuda_sports_lab.git
 cd ml_kuda_sports_lab
@@ -44,3 +49,15 @@ conda activate cuda_sports
 
 # install dependencies
 pip install -r env/requirements.txt
+pip install -r env/boostrap.sh
+
+### 0.1 Install NVIDIA driver (Fedora, once)
+```bash
+You already have an NVIDIA GPU (RTX 5070 Ti). Make sure the driver is installed:
+
+sudo dnf install \
+  https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+  https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda nvidia-settings nvidia-persistenced
+sudo reboot
+
