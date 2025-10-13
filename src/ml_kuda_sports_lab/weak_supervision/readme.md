@@ -177,3 +177,73 @@ If your rule feels like two rules, it probably is.
 5. Evaluate on later years; convert probabilities to fair odds for betting.
 
 That’s it — you can now interpret and apply the tags confidently on your dataset.
+<<<<<<< HEAD
+=======
+
+
+
+#Common LF patterns 
+(a) Range / bucket rule
+def lf_round1(row):
+    p = row["overall_pick"]
+    if pd.isna(p): return ABSTAIN
+    p = int(p)
+    return 1 if 11 <= p <= 32 else ABSTAIN
+(b) Position-aware tweak
+
+def lf_def_65_120_fail(row):
+    p, pos = row["overall_pick"], str(row["position"]).upper()
+    if pd.isna(p) or pos not in {"D","C","LW","RW","G"}: return ABSTAIN
+    p = int(p)
+    return 0 if (pos == "D" and 65 <= p <= 120) else ABSTAIN
+(c) Extreme negative
+def lf_very_late_fail(row):
+    p = row["overall_pick"]
+    if pd.isna(p): return ABSTAIN
+    return 0 if int(p) >= 200 else ABSTAIN
+(d) Tie-breaker that abstains a lot
+def lf_goalie_middle_abstain(row):
+    p, pos = row["overall_pick"], str(row["position"]).upper()
+    if pd.isna(p) or pos != "G": return ABSTAIN
+    p = int(p)
+    # we only speak when it's extreme; otherwise abstain
+    if p <= 60:  return 1
+    if p >= 180: return 0
+    return ABSTAIN
+4) Apply your LFs (vote matrix)
+
+def lf_goalie_middle_abstain(row):
+    p, pos = row["overall_pick"], str(row["position"]).upper()
+    if pd.isna(p) or pos != "G": return ABSTAIN
+    p = int(p)
+    # we only speak when it's extreme; otherwise abstain
+    if p <= 60:  return 1
+    if p >= 180: return 0
+    return ABSTAIN
+
+5) Combine votes → probability (three easy ways)
+A) Simple majority (ignores abstains)
+def majority_proba(row_votes):
+    vals = [v for v in row_votes if v in (0,1)]
+    if not vals: return 0.5
+    return sum(vals) / len(vals)
+
+p = V.apply(majority_proba, axis=1)
+
+6) How to tell if your LFs are any good
+
+If you have a small gold slice (e.g., games_played ≥ 200):
+
+Coverage: fraction of rows where at least one LF votes
+coverage = (V.notna().any(axis=1)).mean()
+
+Conflict rate: among covered rows, fraction where at least one 1 and one 0 appear
+conflict = ((V==1).any(1) & (V==0).any(1)).mean()
+
+Per-LF precision: accuracy of each LF on the gold slice
+precision_lf = mean(lf_vote == y_gold) over non-abstain rows
+
+Overlap: how often LFs fire on the same rows (high overlap = correlated, be careful)
+
+Goal: a few high-precision LFs + some broader coverage LFs that abstain when unsure.
+>>>>>>> 2958833 (Chore:Added some rules of thumbb for lf)
