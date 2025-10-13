@@ -4,8 +4,9 @@ This README explains **what tags mean**, **how to derive them** from your column
 
 ---
 
-## 1) Your Columns & What We Can Use
-
+## 1)  Columns in the Data Set (from kaggle) & What We Can Use
+https://www.kaggle.com/datasets/adryenestewart/nhldraftpicks
+https://www.kaggle.com/code/mattop/nhl-draft-player-analysis-1963-2022
 **Draft-time features (OK for rules):**
 
 - `id`, `year`, `overall_pick`, `team`, `player`, `nationality`, `position`, `age`, `amateur_team`, `height`, `weight`
