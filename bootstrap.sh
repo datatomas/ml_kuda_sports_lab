@@ -16,7 +16,10 @@ set -euo pipefail
 VENV_PATH="${VENV_PATH:-$HOME/.venvs/cuda312}"
 
 # Base dev/runtime packages (keeps your originals + build helpers present)
-PKGS_DEFAULT="pandas numpy scikit-learn pillow tqdm azure-functions ninja cmake"
+PKGS_DEFAULT="pandas numpy scikit-learn pillow tqdm azure-functions ninja cmake playwright
+requests
+selenium
+beautifulsoup4"
 PKGS="${PKGS:-$PKGS_DEFAULT}"
 
 # Torch toggles
