@@ -12,3 +12,4 @@ playwright
 requests
 selenium
 beautifulsoup4
+playwright_stealth

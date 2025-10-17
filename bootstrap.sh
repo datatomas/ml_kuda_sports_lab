@@ -19,7 +19,8 @@ VENV_PATH="${VENV_PATH:-$HOME/.venvs/cuda312}"
 PKGS_DEFAULT="pandas numpy scikit-learn pillow tqdm azure-functions ninja cmake playwright
 requests
 selenium
-beautifulsoup4"
+beautifulsoup4
+playwright-stealth"
 PKGS="${PKGS:-$PKGS_DEFAULT}"
 
 # Torch toggles
