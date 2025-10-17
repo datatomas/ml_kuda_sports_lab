@@ -56,3 +56,4 @@ models/
 src/ml_kuda_sports_lab/__pycache__/__init__.cpython-312.pyc
 src/ml_kuda_sports_lab/__pycache__/__main__.cpython-312.pyc
 .rpm
+ws_ufc.py
